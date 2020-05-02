@@ -8,6 +8,9 @@
     <artifactId>cron</artifactId>
     <name>cron</name>
     <url>https://github.com/eitch/cron</url>
+    <description>Cron expression parser and evaluator. Allows for specifying cron - expressions (in Unix or Quartz like format) and evaluating when it will next
+        match. Originally written by https://github.com/frode-carlsen/cron
+    </description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -56,6 +59,19 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <id>eitch</id>
+            <name>Robert von Burg</name>
+            <email>eitch@eitchnet.ch</email>
+            <url>http://www.eitchnet.ch</url>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
 
     <build>
         <pluginManagement>
