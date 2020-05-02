@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ch.eitchnet</groupId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.6.2</version>
     <packaging>jar</packaging>
     <artifactId>cron</artifactId>
     <name>cron</name>
