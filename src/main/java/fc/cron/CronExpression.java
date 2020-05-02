@@ -16,6 +16,7 @@ package fc.cron;
  * limitations under the License.
  *
  * Note: rewritten to standard Java 8 DateTime by zemiak (c) 2016
+ * Note: warnings cleanups by IntelliJ by eitch (c) 2020
  */
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -109,7 +110,7 @@ import java.util.regex.Pattern;
  * 45&quot;. And &quot;5/15&quot; in seconds field means &quot;for seconds 5, 20, 35, and 50&quot;. If '*' s specified
  * before '/' it is the same as saying it starts at 0. For every field there's a list of values that can be turned on or
  * off. For Seconds and Minutes these range from 0-59. For Hours from 0 to 23, For Day-of-month it's 1 to 31, For Months
- * 1 to 12. &quot;/&quot; character helsp turn some of these values back on. Thus &quot;7/6&quot; in Months field
+ * 1 to 12. &quot;/&quot; character helps turn some of these values back on. Thus &quot;7/6&quot; in Months field
  * specify just Month 7. It doesn't turn on every 6 month following, since cron fields never roll over
  * <P>
  * 'L' Can be used on Day-of-month and Day-of-week fields. It signifies last day of the set of allowed values. In
@@ -119,7 +120,7 @@ import java.util.regex.Pattern;
  * <P>
  * 'W' Can be specified in Day-of-Month field. It specifies closest weekday (monday-friday). Holidays are not accounted
  * for. &quot;15W&quot; in Day-of-Month field means 'closest weekday to 15 i in given month'. If the 15th is a Saturday,
- * it gives Friday. If 15th is a Sunday, the it gives following Monday.
+ * it gives Friday. If 15th is a Sunday, then it gives following Monday.
  * <P>
  * '#' Can be used in Day-of-Week field. For example: &quot;5#3&quot; means 'third friday in month' (day 5 = friday, #3
  * - the third). If the day does not exist (e.g. &quot;5#5&quot; - 5th friday of month) and there aren't 5 fridays in
@@ -306,25 +307,67 @@ public class CronExpression {
         return new CronExpression(expr, false);
     }
 
-    public ZonedDateTime nextTimeAfter(ZonedDateTime afterTime) {
-        // will search for the next time within the next 4 years. If there is no
-        // time matching, an InvalidArgumentException will be thrown (it is very
-        // likely that the cron expression is invalid, like the February 30th).
+    /**
+     * Will search for the next time within the next 4 years. If there is no time matching, an IllegalArgumentException
+     * will be thrown (it is very likely that the cron expression is invalid, like the February 30th).
+     *
+     * @param afterTime
+     * 		the start search time
+     *
+     * @return the next time
+     *
+     * @throws IllegalArgumentException
+     * 		if no next time available in a 4 year limit
+     */
+    public ZonedDateTime nextTimeAfter(ZonedDateTime afterTime) throws IllegalArgumentException {
         return nextTimeAfter(afterTime, afterTime.plusYears(4));
     }
 
-    public LocalDateTime nextLocalDateTimeAfter(LocalDateTime dateTime) {
+    /**
+     * Will search for the next time within the next 4 years. If there is no time matching, an IllegalArgumentException
+     * will be thrown (it is very likely that the cron expression is invalid, like the February 30th).
+     *
+     * @param dateTime
+     * 		the start search time
+     *
+     * @return the next time
+     *
+     * @throws IllegalArgumentException
+     * 		if no next time available in a 4 year limit
+     */
+    public LocalDateTime nextLocalDateTimeAfter(LocalDateTime dateTime) throws IllegalArgumentException {
         return nextTimeAfter(ZonedDateTime.of(dateTime, ZoneId.systemDefault())).toLocalDateTime();
     }
-    
-    public ZonedDateTime nextTimeAfter(ZonedDateTime afterTime, long durationInMillis) {
-        // will search for the next time within the next durationInMillis
-        // millisecond. Be aware that the duration is specified in millis,
-        // but in fact the limit is checked on a day-to-day basis.
+
+    /**
+     * will search for the next time within the next durationInMillis millisecond. Be aware that the duration is
+     * specified in millis, but in fact the limit is checked on a day-to-day basis.
+     *
+     * @param afterTime
+     * 		the start search time
+     * @param durationInMillis
+     * 		the time barrier inclusive
+     *
+     * @return the next time after the given time, before or equal the time barrier
+     */
+    public ZonedDateTime nextTimeAfter(ZonedDateTime afterTime, long durationInMillis) throws IllegalArgumentException {
         return nextTimeAfter(afterTime, afterTime.plus(Duration.ofMillis(durationInMillis)));
     }
 
-    public ZonedDateTime nextTimeAfter(ZonedDateTime afterTime, ZonedDateTime dateTimeBarrier) {
+    /**
+     * will search for the next time within the next dateTimeBarrier. If there is no time matching, an
+     * IllegalArgumentException will be thrown (it is very likely that the cron expression is invalid, like the February
+     * 30th).
+     *
+     * @param afterTime
+     * 		the start search time
+     * @param dateTimeBarrier
+     * 		the date time barrier inclusive
+     *
+     * @return the next time after the given time, before or equal the time barrier
+     */
+    public ZonedDateTime nextTimeAfter(ZonedDateTime afterTime, ZonedDateTime dateTimeBarrier)
+            throws IllegalArgumentException {
         ZonedDateTime[] nextDateTime = { afterTime.plusSeconds(1).withNano(0) };
 
         while (true) {
@@ -359,7 +402,7 @@ public class CronExpression {
      * @param dateTime        Initial {@link ZonedDateTime} instance to start from
      * @param dateTimeBarrier At which point stop searching for next execution time
      * @return {@code true} if a match was found for this field or {@code false} if the field overflowed
-     * @see {@link SimpleField#nextMatch(ZonedDateTime[])}
+     * @see SimpleField#nextMatch(ZonedDateTime[])
      */
     private boolean findDay(ZonedDateTime[] dateTime, ZonedDateTime dateTimeBarrier) {
         int month = dateTime[0].getMonthValue();
@@ -374,7 +417,7 @@ public class CronExpression {
             return true;
     }
 
-    private static void checkIfDateTimeBarrierIsReached(ZonedDateTime nextTime, ZonedDateTime dateTimeBarrier) {
+    private static void checkIfDateTimeBarrierIsReached(ZonedDateTime nextTime, ZonedDateTime dateTimeBarrier) throws IllegalArgumentException{
         if (nextTime.isAfter(dateTimeBarrier)) {
             throw new IllegalArgumentException("No next execution time could be determined that is before the limit of " + dateTimeBarrier);
         }
@@ -397,15 +440,15 @@ public class CronExpression {
 
     abstract static class BasicField {
         private static final Pattern CRON_FIELD_REGEXP = Pattern
-                .compile("(?:                                             # start of group 1\n"
-                        + "   (?:(?<all>\\*)|(?<ignore>\\?)|(?<last>L))  # global flag (L, ?, *)\n"
-                        + " | (?<start>[0-9]{1,2}|[a-z]{3,3})              # or start number or symbol\n"
-                        + "      (?:                                        # start of group 2\n"
-                        + "         (?<mod>L|W)                             # modifier (L,W)\n"
-                        + "       | -(?<end>[0-9]{1,2}|[a-z]{3,3})        # or end nummer or symbol (in range)\n"
-                        + "      )?                                         # end of group 2\n"
-                        + ")                                              # end of group 1\n"
-                        + "(?:(?<incmod>/|\\#)(?<inc>[0-9]{1,7}))?        # increment and increment modifier (/ or \\#)\n",
+                .compile("(?:" //# start of group 1
+                        + "(?:(?<all>\\*)|(?<ignore>\\?)|(?<last>L))" //  # global flag (L, ?, *)
+                                + " | (?<start>[0-9]{1,2}|[a-z]{3})" // # or start number or symbol
+                        + "(?:" // # start of group 2
+                        + "(?<mod>[LW])" // # modifier (L,W)
+                        + "| -(?<end>[0-9]{1,2}|[a-z]{3,3})" // # or end nummer or symbol (in range)
+                        + ")?" // # end of group 2
+                        + ")" // # end of group 1
+                        + "(?:(?<incmod>[/\\#])(?<inc>[0-9]{1,7}))?", // # increment and increment modifier (/ or \#)
                         Pattern.CASE_INSENSITIVE | Pattern.COMMENTS);
 
         final CronFieldType fieldType;
@@ -416,26 +459,26 @@ public class CronExpression {
             parse(fieldExpr);
         }
 
-        private void parse(String fieldExpr) { // NOSONAR
+        private void parse(String fieldExpr) {
             String[] rangeParts = fieldExpr.split(",");
             for (String rangePart : rangeParts) {
                 Matcher m = CRON_FIELD_REGEXP.matcher(rangePart);
                 if (!m.matches()) {
                     throw new IllegalArgumentException("Invalid cron field '" + rangePart + "' for field [" + fieldType + "]");
                 }
-                String startNummer = m.group("start");
+                String startNumber = m.group("start");
                 String modifier = m.group("mod");
-                String sluttNummer = m.group("end");
+                String sluttNumber = m.group("end");
                 String incrementModifier = m.group("incmod");
                 String increment = m.group("inc");
 
                 FieldPart part = new FieldPart();
                 part.increment = 999;
-                if (startNummer != null) {
-                    part.from = mapValue(startNummer);
+                if (startNumber != null) {
+                    part.from = mapValue(startNumber);
                     part.modifier = modifier;
-                    if (sluttNummer != null) {
-                        part.to = mapValue(sluttNummer);
+                    if (sluttNumber != null) {
+                        part.to = mapValue(sluttNumber);
                         part.increment = 1;
                     } else if (increment != null) {
                         part.to = fieldType.to;
@@ -496,10 +539,7 @@ public class CronExpression {
         }
 
         protected boolean matches(int val, FieldPart part) {
-            if (val >= part.from && val <= part.to && (val - part.from) % part.increment == 0) {
-                return true;
-            }
-            return false;
+            return val >= part.from && val <= part.to && (val - part.from) % part.increment == 0;
         }
 
         protected int nextMatch(int val, FieldPart part) {
@@ -598,9 +638,9 @@ public class CronExpression {
 
         @Override
         protected void validatePart(FieldPart part) {
-            if (part.modifier != null && Arrays.asList("L", "?").indexOf(part.modifier) == -1) {
+            if (part.modifier != null && !Arrays.asList("L", "?").contains(part.modifier)) {
                 throw new IllegalArgumentException(String.format("Invalid modifier [%s]", part.modifier));
-            } else if (part.incrementModifier != null && Arrays.asList("/", "#").indexOf(part.incrementModifier) == -1) {
+            } else if (part.incrementModifier != null && !Arrays.asList("/", "#").contains(part.incrementModifier)) {
                 throw new IllegalArgumentException(String.format("Invalid increment modifier [%s]", part.incrementModifier));
             }
         }
@@ -635,7 +675,7 @@ public class CronExpression {
 
         @Override
         protected void validatePart(FieldPart part) {
-            if (part.modifier != null && Arrays.asList("L", "W", "?").indexOf(part.modifier) == -1) {
+            if (part.modifier != null && !Arrays.asList("L", "W", "?").contains(part.modifier)) {
                 throw new IllegalArgumentException(String.format("Invalid modifier [%s]", part.modifier));
             } else if (part.incrementModifier != null && !"/".equals(part.incrementModifier)) {
                 throw new IllegalArgumentException(String.format("Invalid increment modifier [%s]", part.incrementModifier));

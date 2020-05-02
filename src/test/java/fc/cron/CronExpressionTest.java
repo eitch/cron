@@ -38,29 +38,30 @@ import fc.cron.CronExpression.DayOfWeekField;
 import fc.cron.CronExpression.SimpleField;
 
 public class CronExpressionTest {
-    TimeZone original;
-    ZoneId zoneId;
+
+    private TimeZone original;
+    private ZoneId zoneId;
 
     @Before
     public void setUp() {
-        original = TimeZone.getDefault();
+        this.original = TimeZone.getDefault();
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"));
-        zoneId = TimeZone.getDefault().toZoneId();
+		this.zoneId = TimeZone.getDefault().toZoneId();
     }
 
     @After
     public void tearDown() {
-        TimeZone.setDefault(original);
+        TimeZone.setDefault(this.original);
     }
 
     @Test
-    public void shall_parse_number() throws Exception {
+    public void shall_parse_number() {
         SimpleField field = new SimpleField(CronFieldType.MINUTE, "5");
         assertPossibleValues(field, 5);
     }
 
     private void assertPossibleValues(SimpleField field, Integer... values) {
-        Set<Integer> valid = values == null ? new HashSet<Integer>() : new HashSet<>(Arrays.asList(values));
+        Set<Integer> valid = values == null ? new HashSet<>() : new HashSet<>(Arrays.asList(values));
         for (int i = field.fieldType.from; i <= field.fieldType.to; i++) {
             String errorText = i + ":" + valid;
             if (valid.contains(i)) {
@@ -72,85 +73,85 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void shall_parse_number_with_increment() throws Exception {
+    public void shall_parse_number_with_increment() {
         SimpleField field = new SimpleField(CronFieldType.MINUTE, "0/15");
         assertPossibleValues(field, 0, 15, 30, 45);
     }
 
     @Test
-    public void shall_parse_range() throws Exception {
+    public void shall_parse_range() {
         SimpleField field = new SimpleField(CronFieldType.MINUTE, "5-10");
         assertPossibleValues(field, 5, 6, 7, 8, 9, 10);
     }
 
     @Test
-    public void shall_parse_range_with_increment() throws Exception {
+    public void shall_parse_range_with_increment() {
         SimpleField field = new SimpleField(CronFieldType.MINUTE, "20-30/2");
         assertPossibleValues(field, 20, 22, 24, 26, 28, 30);
     }
 
     @Test
-    public void shall_parse_asterix() throws Exception {
+    public void shall_parse_asterix() {
         SimpleField field = new SimpleField(CronFieldType.DAY_OF_WEEK, "*");
         assertPossibleValues(field, 1, 2, 3, 4, 5, 6, 7);
     }
 
     @Test
-    public void shall_parse_asterix_with_increment() throws Exception {
+    public void shall_parse_asterix_with_increment() {
         SimpleField field = new SimpleField(CronFieldType.DAY_OF_WEEK, "*/2");
         assertPossibleValues(field, 1, 3, 5, 7);
     }
 
     @Test
-    public void shall_ignore_field_in_day_of_week() throws Exception {
+    public void shall_ignore_field_in_day_of_week() {
         DayOfWeekField field = new DayOfWeekField("?");
         assertTrue("day of week is ?", field.matches(ZonedDateTime.now().toLocalDate()));
     }
 
     @Test
-    public void shall_ignore_field_in_day_of_month() throws Exception {
+    public void shall_ignore_field_in_day_of_month() {
         DayOfMonthField field = new DayOfMonthField("?");
         assertTrue("day of month is ?", field.matches(ZonedDateTime.now().toLocalDate()));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shall_give_error_if_invalid_count_field() throws Exception {
+    public void shall_give_error_if_invalid_count_field() {
         new CronExpression("* 3 *");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shall_give_error_if_minute_field_ignored() throws Exception {
+    public void shall_give_error_if_minute_field_ignored() {
         SimpleField field = new SimpleField(CronFieldType.MINUTE, "?");
         field.matches(1);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shall_give_error_if_hour_field_ignored() throws Exception {
+    public void shall_give_error_if_hour_field_ignored() {
         SimpleField field = new SimpleField(CronFieldType.HOUR, "?");
         field.matches(1);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shall_give_error_if_month_field_ignored() throws Exception {
+    public void shall_give_error_if_month_field_ignored() {
         SimpleField field = new SimpleField(CronFieldType.MONTH, "?");
         field.matches(1);
     }
 
     @Test
-    public void shall_give_last_day_of_month_in_leapyear() throws Exception {
+    public void shall_give_last_day_of_month_in_leap_year() {
         CronExpression.DayOfMonthField field = new DayOfMonthField("L");
-        assertTrue("day of month is L", field.matches(LocalDate.of(2012, 02, 29)));
+        assertTrue("day of month is L", field.matches(LocalDate.of(2012, 2, 29)));
     }
 
     @Test
-    public void shall_give_last_day_of_month() throws Exception {
+    public void shall_give_last_day_of_month() {
         CronExpression.DayOfMonthField field = new DayOfMonthField("L");
         YearMonth now = YearMonth.now();
         assertTrue("L matches to the last day of month", field.matches(LocalDate.of(now.getYear(), now.getMonthValue(), now.lengthOfMonth())));
     }
 
     @Test
-    public void check_all() throws Exception {
+    public void check_all() {
         CronExpression cronExpr = new CronExpression("* * * * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 1, 0, zoneId);
@@ -167,12 +168,12 @@ public class CronExpressionTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void check_invalid_input() throws Exception {
+    public void check_invalid_input() {
         new CronExpression(null);
     }
 
     @Test
-    public void check_second_number() throws Exception {
+    public void check_second_number() {
         CronExpression cronExpr = new CronExpression("3 * * * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 1, 0, 0, zoneId);
@@ -197,7 +198,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_second_increment() throws Exception {
+    public void check_second_increment() {
         CronExpression cronExpr = new CronExpression("5/15 * * * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -223,15 +224,15 @@ public class CronExpressionTest {
         // if rolling over minute then reset second (cron rules - increment affects only values in own field)
         after = ZonedDateTime.of(2012, 4, 10, 13, 0, 50, 0, zoneId);
         expected = ZonedDateTime.of(2012, 4, 10, 13, 1, 10, 0, zoneId);
-        assertTrue(new CronExpression("10/100 * * * * *").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("10/100 * * * * *").nextTimeAfter(after), expected);
 
         after = ZonedDateTime.of(2012, 4, 10, 13, 1, 10, 0, zoneId);
         expected = ZonedDateTime.of(2012, 4, 10, 13, 2, 10, 0, zoneId);
-        assertTrue(new CronExpression("10/100 * * * * *").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("10/100 * * * * *").nextTimeAfter(after), expected);
     }
 
     @Test
-    public void check_second_list() throws Exception {
+    public void check_second_list() {
         CronExpression cronExpr = new CronExpression("7,19 * * * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -248,7 +249,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_second_range() throws Exception {
+    public void check_second_range() {
         CronExpression cronExpr = new CronExpression("42-45 * * * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -273,17 +274,17 @@ public class CronExpressionTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void check_second_invalid_range() throws Exception {
+    public void check_second_invalid_range() {
         new CronExpression("42-63 * * * * *");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void check_second_invalid_increment_modifier() throws Exception {
+    public void check_second_invalid_increment_modifier() {
         new CronExpression("42#3 * * * * *");
     }
 
     @Test
-    public void check_minute_number() throws Exception {
+    public void check_minute_number() {
         CronExpression cronExpr = new CronExpression("0 3 * * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 1, 0, 0, zoneId);
@@ -296,7 +297,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_minute_increment() throws Exception {
+    public void check_minute_increment() {
         CronExpression cronExpr = new CronExpression("0 0/15 * * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -317,7 +318,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_minute_list() throws Exception {
+    public void check_minute_list() {
         CronExpression cronExpr = new CronExpression("0 7,19 * * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -330,7 +331,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_hour_number() throws Exception {
+    public void check_hour_number() {
         CronExpression cronExpr = new CronExpression("0 * 3 * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 1, 0, 0, zoneId);
@@ -347,7 +348,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_hour_increment() throws Exception {
+    public void check_hour_increment() {
         CronExpression cronExpr = new CronExpression("0 * 0/15 * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -372,7 +373,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_hour_list() throws Exception {
+    public void check_hour_list() {
         CronExpression cronExpr = new CronExpression("0 * 7,19 * * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -389,18 +390,18 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_hour_shall_run_25_times_in_DST_change_to_wintertime() throws Exception {
+    public void check_hour_shall_run_25_times_in_DST_change_to_wintertime() {
         CronExpression cron = new CronExpression("0 1 * * * *");
         ZonedDateTime start = ZonedDateTime.of(2011, 10, 30, 0, 0, 0, 0, zoneId);
-        ZonedDateTime slutt = start.plusDays(1);
+        ZonedDateTime end = start.plusDays(1);
         ZonedDateTime tid = start;
 
         // throws: Unsupported unit: Seconds
-        // assertEquals(25, Duration.between(start.toLocalDate(), slutt.toLocalDate()).toHours());
+        // assertEquals(25, Duration.between(start.toLocalDate(), end.toLocalDate()).toHours());
 
         int count = 0;
         ZonedDateTime lastTime = tid;
-        while (tid.isBefore(slutt)) {
+        while (tid.isBefore(end)) {
             ZonedDateTime nextTime = cron.nextTimeAfter(tid);
             assertTrue(nextTime.isAfter(lastTime));
             lastTime = nextTime;
@@ -411,18 +412,18 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_hour_shall_run_23_times_in_DST_change_to_summertime() throws Exception {
+    public void check_hour_shall_run_23_times_in_DST_change_to_summertime() {
         CronExpression cron = new CronExpression("0 0 * * * *");
-        ZonedDateTime start = ZonedDateTime.of(2011, 03, 27, 1, 0, 0, 0, zoneId);
-        ZonedDateTime slutt = start.plusDays(1);
+        ZonedDateTime start = ZonedDateTime.of(2011, 3, 27, 1, 0, 0, 0, zoneId);
+        ZonedDateTime end = start.plusDays(1);
         ZonedDateTime tid = start;
 
         // throws: Unsupported unit: Seconds
-        // assertEquals(23, Duration.between(start.toLocalDate(), slutt.toLocalDate()).toHours());
+        // assertEquals(23, Duration.between(start.toLocalDate(), end.toLocalDate()).toHours());
 
         int count = 0;
         ZonedDateTime lastTime = tid;
-        while (tid.isBefore(slutt)) {
+        while (tid.isBefore(end)) {
             ZonedDateTime nextTime = cron.nextTimeAfter(tid);
             assertTrue(nextTime.isAfter(lastTime));
             lastTime = nextTime;
@@ -433,7 +434,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfMonth_number() throws Exception {
+    public void check_dayOfMonth_number() {
         CronExpression cronExpr = new CronExpression("0 * * 3 * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -454,7 +455,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfMonth_increment() throws Exception {
+    public void check_dayOfMonth_increment() {
         CronExpression cronExpr = new CronExpression("0 0 0 1/15 * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -474,7 +475,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfMonth_list() throws Exception {
+    public void check_dayOfMonth_list() {
         CronExpression cronExpr = new CronExpression("0 0 0 7,19 * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -495,7 +496,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfMonth_last() throws Exception {
+    public void check_dayOfMonth_last() {
         CronExpression cronExpr = new CronExpression("0 0 0 L * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -508,7 +509,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfMonth_number_last_L() throws Exception {
+    public void check_dayOfMonth_number_last_L() {
         CronExpression cronExpr = new CronExpression("0 0 0 3L * *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 10, 13, 0, 0, 0, zoneId);
@@ -521,7 +522,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfMonth_closest_weekday_W() throws Exception {
+    public void check_dayOfMonth_closest_weekday_W() {
         CronExpression cronExpr = new CronExpression("0 0 0 9W * *");
 
         // 9 - is weekday in may
@@ -545,40 +546,40 @@ public class CronExpressionTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void check_dayOfMonth_invalid_modifier() throws Exception {
+    public void check_dayOfMonth_invalid_modifier() {
         new CronExpression("0 0 0 9X * *");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void check_dayOfMonth_invalid_increment_modifier() throws Exception {
+    public void check_dayOfMonth_invalid_increment_modifier() {
         new CronExpression("0 0 0 9#2 * *");
     }
 
     @Test
-    public void check_month_number() throws Exception {
+    public void check_month_number() {
         ZonedDateTime after = ZonedDateTime.of(2012, 2, 12, 0, 0, 0, 0, zoneId);
         ZonedDateTime expected = ZonedDateTime.of(2012, 5, 1, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 1 5 *").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 1 5 *").nextTimeAfter(after), expected);
     }
 
     @Test
-    public void check_month_increment() throws Exception {
+    public void check_month_increment() {
         ZonedDateTime after = ZonedDateTime.of(2012, 2, 12, 0, 0, 0, 0, zoneId);
         ZonedDateTime expected = ZonedDateTime.of(2012, 5, 1, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 1 5/2 *").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 1 5/2 *").nextTimeAfter(after), expected);
 
         after = ZonedDateTime.of(2012, 5, 1, 0, 0, 0, 0, zoneId);
         expected = ZonedDateTime.of(2012, 7, 1, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 1 5/2 *").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 1 5/2 *").nextTimeAfter(after), expected);
 
         // if rolling over year then reset month field (cron rules - increments only affect own field)
         after = ZonedDateTime.of(2012, 5, 1, 0, 0, 0, 0, zoneId);
         expected = ZonedDateTime.of(2013, 5, 1, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 1 5/10 *").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 1 5/10 *").nextTimeAfter(after), expected);
     }
 
     @Test
-    public void check_month_list() throws Exception {
+    public void check_month_list() {
         CronExpression cronExpr = new CronExpression("0 0 0 1 3,7,12 *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 2, 12, 0, 0, 0, 0, zoneId);
@@ -595,7 +596,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_month_list_by_name() throws Exception {
+    public void check_month_list_by_name() {
         CronExpression cronExpr = new CronExpression("0 0 0 1 MAR,JUL,DEC *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 2, 12, 0, 0, 0, 0, zoneId);
@@ -612,12 +613,12 @@ public class CronExpressionTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void check_month_invalid_modifier() throws Exception {
+    public void check_month_invalid_modifier() {
         new CronExpression("0 0 0 1 ? *");
     }
 
     @Test
-    public void check_dayOfWeek_number() throws Exception {
+    public void check_dayOfWeek_number() {
         CronExpression cronExpr = new CronExpression("0 0 0 * * 3");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
@@ -638,7 +639,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfWeek_increment() throws Exception {
+    public void check_dayOfWeek_increment() {
         CronExpression cronExpr = new CronExpression("0 0 0 * * 3/2");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
@@ -659,7 +660,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfWeek_list() throws Exception {
+    public void check_dayOfWeek_list() {
         CronExpression cronExpr = new CronExpression("0 0 0 * * 1,5,7");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
@@ -676,7 +677,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfWeek_list_by_name() throws Exception {
+    public void check_dayOfWeek_list_by_name() {
         CronExpression cronExpr = new CronExpression("0 0 0 * * MON,FRI,SUN");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
@@ -693,7 +694,7 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void check_dayOfWeek_last_friday_in_month() throws Exception {
+    public void check_dayOfWeek_last_friday_in_month() {
         CronExpression cronExpr = new CronExpression("0 0 0 * * 5L");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 1, 1, 0, 0, 0, zoneId);
@@ -710,85 +711,85 @@ public class CronExpressionTest {
 
         after = ZonedDateTime.of(2012, 2, 6, 0, 0, 0, 0, zoneId);
         expected = ZonedDateTime.of(2012, 2, 24, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * FRIL").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * FRIL").nextTimeAfter(after), expected);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void check_dayOfWeek_invalid_modifier() throws Exception {
+    public void check_dayOfWeek_invalid_modifier() {
         new CronExpression("0 0 0 * * 5W");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void check_dayOfWeek_invalid_increment_modifier() throws Exception {
+    public void check_dayOfWeek_invalid_increment_modifier() {
         new CronExpression("0 0 0 * * 5?3");
     }
 
     @Test
-    public void check_dayOfWeek_shall_interpret_0_as_sunday() throws Exception {
+    public void check_dayOfWeek_shall_interpret_0_as_sunday() {
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
         ZonedDateTime expected = ZonedDateTime.of(2012, 4, 8, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 0").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 0").nextTimeAfter(after), expected);
 
         expected = ZonedDateTime.of(2012, 4, 29, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 0L").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 0L").nextTimeAfter(after), expected);
 
         expected = ZonedDateTime.of(2012, 4, 8, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 0#2").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 0#2").nextTimeAfter(after), expected);
     }
 
     @Test
-    public void check_dayOfWeek_shall_interpret_7_as_sunday() throws Exception {
+    public void check_dayOfWeek_shall_interpret_7_as_sunday() {
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
         ZonedDateTime expected = ZonedDateTime.of(2012, 4, 8, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 7").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 7").nextTimeAfter(after), expected);
 
         expected = ZonedDateTime.of(2012, 4, 29, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 7L").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 7L").nextTimeAfter(after), expected);
 
         expected = ZonedDateTime.of(2012, 4, 8, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 7#2").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 7#2").nextTimeAfter(after), expected);
     }
 
     @Test
-    public void check_dayOfWeek_nth_day_in_month() throws Exception {
+    public void check_dayOfWeek_nth_day_in_month() {
         ZonedDateTime after = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
         ZonedDateTime expected = ZonedDateTime.of(2012, 4, 20, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 5#3").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 5#3").nextTimeAfter(after), expected);
 
         after = ZonedDateTime.of(2012, 4, 20, 0, 0, 0, 0, zoneId);
         expected = ZonedDateTime.of(2012, 5, 18, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 5#3").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 5#3").nextTimeAfter(after), expected);
 
         after = ZonedDateTime.of(2012, 3, 30, 0, 0, 0, 0, zoneId);
         expected = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 7#1").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 7#1").nextTimeAfter(after), expected);
 
         after = ZonedDateTime.of(2012, 4, 1, 0, 0, 0, 0, zoneId);
         expected = ZonedDateTime.of(2012, 5, 6, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 7#1").nextTimeAfter(after).equals(expected));
+        assertEquals(new CronExpression("0 0 0 * * 7#1").nextTimeAfter(after), expected);
 
         after = ZonedDateTime.of(2012, 2, 6, 0, 0, 0, 0, zoneId);
         expected = ZonedDateTime.of(2012, 2, 29, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * 3#5").nextTimeAfter(after).equals(expected)); // leapday
+        assertEquals(new CronExpression("0 0 0 * * 3#5").nextTimeAfter(after), expected); // leap day
 
         after = ZonedDateTime.of(2012, 2, 6, 0, 0, 0, 0, zoneId);
         expected = ZonedDateTime.of(2012, 2, 29, 0, 0, 0, 0, zoneId);
-        assertTrue(new CronExpression("0 0 0 * * WED#5").nextTimeAfter(after).equals(expected)); // leapday
+        assertEquals(new CronExpression("0 0 0 * * WED#5").nextTimeAfter(after), expected); // leap day
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shall_not_not_support_rolling_period() throws Exception {
+    public void shall_not_not_support_rolling_period() {
         new CronExpression("* * 5-1 * * *");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void non_existing_date_throws_exception() throws Exception {
+    public void non_existing_date_throws_exception() {
         // Will check for the next 4 years - no 30th of February is found so a IAE is thrown.
         new CronExpression("* * * 30 2 *").nextTimeAfter(ZonedDateTime.now());
     }
 
     @Test
-    public void test_default_barrier() throws Exception {
+    public void test_default_barrier() {
         CronExpression cronExpr = new CronExpression("* * * 29 2 *");
 
         ZonedDateTime after = ZonedDateTime.of(2012, 3, 1, 0, 0, 0, 0, zoneId);
@@ -798,7 +799,7 @@ public class CronExpressionTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void test_one_year_barrier() throws Exception {
+    public void test_one_year_barrier() {
         ZonedDateTime after = ZonedDateTime.of(2012, 3, 1, 0, 0, 0, 0, zoneId);
         ZonedDateTime barrier = ZonedDateTime.of(2013, 3, 1, 0, 0, 0, 0, zoneId);
         // The next leap year is 2016, so an IllegalArgumentException is expected.
@@ -806,35 +807,35 @@ public class CronExpressionTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void test_two_year_barrier() throws Exception {
+    public void test_two_year_barrier() {
         ZonedDateTime after = ZonedDateTime.of(2012, 3, 1, 0, 0, 0, 0, zoneId);
         // The next leap year is 2016, so an IllegalArgumentException is expected.
-        new CronExpression("* * * 29 2 *").nextTimeAfter(after, 1000 * 60 * 60 * 24 * 356 * 2);
+        new CronExpression("* * * 29 2 *").nextTimeAfter(after, 1000L * 60L * 60L * 24L * 356L * 2L);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void test_seconds_specified_but_should_be_omitted() throws Exception {
+    public void test_seconds_specified_but_should_be_omitted() {
         CronExpression.createWithoutSeconds("* * * 29 2 *");
     }
 
     @Test
-    public void test_without_seconds() throws Exception {
+    public void test_without_seconds() {
         ZonedDateTime after = ZonedDateTime.of(2012, 3, 1, 0, 0, 0, 0, zoneId);
         ZonedDateTime expected = ZonedDateTime.of(2016, 2, 29, 0, 0, 0, 0, zoneId);
-        assertTrue(CronExpression.createWithoutSeconds("* * 29 2 *").nextTimeAfter(after).equals(expected));
+        assertEquals(CronExpression.createWithoutSeconds("* * 29 2 *").nextTimeAfter(after), expected);
     }
 
     @Test
     public void testTriggerProblemSameMonth() {
         assertEquals(ZonedDateTime.parse("2020-01-02T00:50:00Z"),
-            new CronExpression("00 50 * 1-8 1 *")
+            new CronExpression("0 50 * 1-8 1 *")
                 .nextTimeAfter(ZonedDateTime.parse("2020-01-01T23:50:00Z")));
     }
 
     @Test
     public void testTriggerProblemNextMonth() {
         assertEquals(ZonedDateTime.parse("2020-02-01T00:50:00Z"),
-            new CronExpression("00 50 * 1-8 2 *")
+            new CronExpression("0 50 * 1-8 2 *")
                 .nextTimeAfter(ZonedDateTime.parse("2020-01-31T23:50:00Z")));
     }
 
