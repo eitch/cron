@@ -1,15 +1,11 @@
 
-[![Known Vulnerabilities](https://snyk.io/test/github/frode-carlsen/cron/badge.svg?targetFile=pom.xml)](https://snyk.io/test/github/frode-carlsen/cron?targetFile=pom.xml)
+Fork from https://github.com/set-de/cron
 
 # cron
 
  Cron expression parser and evaluator.  
  
  Allows for specifying cron - expressions (in Unix or Quartz like format) and evaluating when it will next match.
-
-# Modules
-  * cron-jodatime:  Based on jodatime.  Supports java6
-  * cron-java8: Based on java8/time. Requires java8+
   
 # Usage
 
